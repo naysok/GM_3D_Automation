@@ -1,12 +1,57 @@
 const urlParams = new URLSearchParams(window.location.search);
-const seed = urlParams.get('seed');
+// const seed = urlParams.get('seed');
+const seed = 1234;
+
 
 let palette;
 let g;
 let current = seed;
 let texture;
 
+
+let url = [
+    "202c39-283845-b8b08d-f2d492-f29559",
+    "1f2041-4b3f72-ffc857-119da4-19647e",
+    "2f4858-33658a-86bbd8-f6ae2d-f26419",
+    "ffac81-ff928b-fec3a6-efe9ae-cdeac0",
+    "f79256-fbd1a2-7dcfb6-00b2ca-1d4e89",
+    "e27396-ea9ab2-efcfe3-eaf2d7-b3dee2",
+    "966b9d-c98686-f2b880-fff4ec-e7cfbc",
+    "50514f-f25f5c-ffe066-247ba0-70c1b3",
+    "177e89-084c61-db3a34-ffc857-323031",
+    "390099-9e0059-ff0054-ff5400-ffbd00",
+    "0d3b66-faf0ca-f4d35e-ee964b-f95738",
+    "177e89-084c61-db3a34-ffc857-323031",
+    "780000-c1121f-fdf0d5-003049-669bbc",
+    "eae4e9-fff1e6-fde2e4-fad2e1-e2ece9-bee1e6-f0efeb-dfe7fd-cddafd",
+    "f94144-f3722c-f8961e-f9c74f-90be6d-43aa8b-577590",
+    "555b6e-89b0ae-bee3db-faf9f9-ffd6ba",
+    "9b5de5-f15bb5-fee440-00bbf9-00f5d4",
+    "ef476f-ffd166-06d6a0-118ab2-073b4c",
+    "006466-065a60-0b525b-144552-1b3a4b-212f45-272640-312244-3e1f47-4d194d",
+    "f94144-f3722c-f8961e-f9844a-f9c74f-90be6d-43aa8b-4d908e-577590-277da1",
+    "f6bd60-f7ede2-f5cac3-84a59d-f28482",
+    "0081a7-00afb9-fdfcdc-fed9b7-f07167",
+    "f4f1de-e07a5f-3d405b-81b29a-f2cc8f",
+    "50514f-f25f5c-ffe066-247ba0-70c1b3",
+    "001219-005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226",
+    "ef476f-ffd166-06d6a0-118ab2-073b4c",
+    "fec5bb-fcd5ce-fae1dd-f8edeb-e8e8e4-d8e2dc-ece4db-ffe5d9-ffd7ba-fec89a",
+    "e63946-f1faee-a8dadc-457b9d-1d3557",
+    "264653-2a9d8f-e9c46a-f4a261-e76f51",
+];
+
+url = [
+    "264653-2a9d8f-e9c46a-f4a261-e76f51"
+];
+
+
+
+// ==============================================================================
+
+
 function setup() {
+
     createCanvas(1600, 1600);
     pixelDensity(1);
     colorMode(HSB, 360, 100, 100, 100);
@@ -32,11 +77,15 @@ function setup() {
 }
 
 function draw() {
+
+    background(random(palette));
+
     clear();
 
     palette = shuffle(createPalette(random(url)), true);
     randomSeed(current);
     noiseSeed(current);
+
 
     let offset = width / 10;
     let x = offset;
@@ -47,27 +96,45 @@ function draw() {
     let c = palette[0];
     palette.shift();
 
+
+
+
     push();
+
     fill(c);
     strokeWeight(30);
     stroke(c);
     let nScale = random(60, 200);
-    drawShape(x + w / 2, y + h / 2, (w * 3) / 4, nScale);
+
+    let log_shape = false;
+
+
+    drawShape(x + w / 2, y + h / 2, (w * 3) / 4, nScale, current, log_shape);
+
     drawingContext.clip();
     drawGraphic(0, 0, width, height, palette, this);
+
     pop();
 
-    g = get();
 
-    background(random(palette));
+    g = get();
+    // console.log(g);
+
 
     let area = detectEdge(g);
+
     rectMode(CORNERS);
+
+
     let center = detectCenter(area);
     let v = p5.Vector.sub(
         createVector(width / 2, height / 2),
         createVector(center.x, center.y)
     );
+
+
+
+    // ========== MOVE? ===========
 
     push();
     imageMode(CENTER);
@@ -78,24 +145,36 @@ function draw() {
 
     image(g, 0, 0);
     pop();
+
+    // ========== MOVE? ===========
+
+
+
     image(texture, 0, 0);
 
-    //   frameRate(1 / 3);
+
+
+    // ========== GUIDE ===========
+
+    stroke(255, 0, 0);
+    noFill();
+    strokeWeight(4);
+    rect(area.minX, area.minY, area.maxX, area.maxY);
+    line(area.minX, area.minY, area.maxX, area.maxY);
+    line(area.maxX, area.minY, area.minX, area.maxY);
+    ellipse(center.x, center.y, 20, 20)
+
+    // ========== GUIDE ===========
+
+
+
+    // frameRate(30
     noLoop()
 }
 
-function detectCenter(area) {
-    let x = lerp(area.minX, area.maxX, 0.5);
-    let y = lerp(area.minY, area.maxY, 0.5);
-    let w = abs(area.maxX - area.minX);
-    let h = abs(area.maxY - area.minY);
-    return {
-        x: x,
-        y: y,
-        w: w,
-        h: h,
-    };
-}
+
+// ===================================================================================
+
 
 function detectEdge(g) {
     let minX, minY, maxX, maxY;
@@ -116,6 +195,7 @@ function detectEdge(g) {
             }
         }
     }
+
     return {
         minX: minX,
         minY: minY,
@@ -124,12 +204,35 @@ function detectEdge(g) {
     };
 }
 
+function detectCenter(area) {
+
+    let x = lerp(area.minX, area.maxX, 0.5);
+    let y = lerp(area.minY, area.maxY, 0.5);
+    let w = abs(area.maxX - area.minX);
+    let h = abs(area.maxY - area.minY);
+
+    return {
+        x: x,
+        y: y,
+        w: w,
+        h: h,
+    };
+}
+
+
+// ===================================================================================
+
+
+
 function drawGraphic(x, y, w, h, colors, target) {
     let g = createGraphics(w / 2, h);
     g.angleMode(DEGREES);
     let gx = 0;
     let gy = 0;
     let gxStep, gyStep;
+
+    // console.log("trigger :" + (random()));
+
 
     if (random() > 0.5) {
         while (gy < g.height) {
@@ -197,6 +300,12 @@ function drawPattern(g, x, y, w, h, colors) {
     let c = -1,
         pc = -1;
     g.stroke(0, (20 / 100) * 255);
+
+
+    // NEW
+    console.log("switch trigger :" + int(random(8)));
+
+
 
     switch (int(random(8))) {
         case 0:
@@ -373,11 +482,17 @@ function createPalette(_url) {
     return arr;
 }
 
-function drawShape(cx, cy, r, nPhase) {
+
+// =======================================================================
+
+
+function drawShape(cx, cy, r, nPhase, seed, bool_log) {
     push();
     translate(cx, cy, r);
     rotate(-90);
     let arr = [];
+    let arr_export = [];
+
     beginShape();
     for (let angle = 0; angle < 180; angle += 1) {
         let nr = map(noise(cx, cy, angle / nPhase, r), 0, 1, (r * 1) / 8, r);
@@ -386,6 +501,7 @@ function drawShape(cx, cy, r, nPhase) {
         let x = cos(angle) * nr;
         let y = sin(angle) * nr;
         vertex(x, y);
+        arr_export.push(String(x) + "," + String(y) + "\n")
     }
     arr.reverse();
     for (let angle = 180; angle < 180 + 180; angle += 1) {
@@ -394,40 +510,21 @@ function drawShape(cx, cy, r, nPhase) {
         let x = cos(angle) * nr;
         let y = sin(angle) * nr;
         vertex(x, y);
+        arr_export.push(String(x) + "," + String(y) + "\n")
     }
     endShape(CLOSE);
-
     pop();
+
+    if (bool_log === true) {
+        export_log(arr_export, "shape", seed);
+    }
 }
 
-let url = [
-    "202c39-283845-b8b08d-f2d492-f29559",
-    "1f2041-4b3f72-ffc857-119da4-19647e",
-    "2f4858-33658a-86bbd8-f6ae2d-f26419",
-    "ffac81-ff928b-fec3a6-efe9ae-cdeac0",
-    "f79256-fbd1a2-7dcfb6-00b2ca-1d4e89",
-    "e27396-ea9ab2-efcfe3-eaf2d7-b3dee2",
-    "966b9d-c98686-f2b880-fff4ec-e7cfbc",
-    "50514f-f25f5c-ffe066-247ba0-70c1b3",
-    "177e89-084c61-db3a34-ffc857-323031",
-    "390099-9e0059-ff0054-ff5400-ffbd00",
-    "0d3b66-faf0ca-f4d35e-ee964b-f95738",
-    "177e89-084c61-db3a34-ffc857-323031",
-    "780000-c1121f-fdf0d5-003049-669bbc",
-    "eae4e9-fff1e6-fde2e4-fad2e1-e2ece9-bee1e6-f0efeb-dfe7fd-cddafd",
-    "f94144-f3722c-f8961e-f9c74f-90be6d-43aa8b-577590",
-    "555b6e-89b0ae-bee3db-faf9f9-ffd6ba",
-    "9b5de5-f15bb5-fee440-00bbf9-00f5d4",
-    "ef476f-ffd166-06d6a0-118ab2-073b4c",
-    "006466-065a60-0b525b-144552-1b3a4b-212f45-272640-312244-3e1f47-4d194d",
-    "f94144-f3722c-f8961e-f9844a-f9c74f-90be6d-43aa8b-4d908e-577590-277da1",
-    "f6bd60-f7ede2-f5cac3-84a59d-f28482",
-    "0081a7-00afb9-fdfcdc-fed9b7-f07167",
-    "f4f1de-e07a5f-3d405b-81b29a-f2cc8f",
-    "50514f-f25f5c-ffe066-247ba0-70c1b3",
-    "001219-005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226",
-    "ef476f-ffd166-06d6a0-118ab2-073b4c",
-    "fec5bb-fcd5ce-fae1dd-f8edeb-e8e8e4-d8e2dc-ece4db-ffe5d9-ffd7ba-fec89a",
-    "e63946-f1faee-a8dadc-457b9d-1d3557",
-    "264653-2a9d8f-e9c46a-f4a261-e76f51",
-];
+
+function export_log(ary, file_name, seed) {;
+    let blob = new Blob(ary, { type: "text/plan" });
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = file_name + "_" + seed + '.txt';
+    link.click();
+}
