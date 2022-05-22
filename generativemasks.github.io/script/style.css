@@ -1,10 +1,12 @@
-html, body {
-  margin: 0;
-  padding: 0;
+html,
+body {
+    margin: 0;
+    padding: 0;
 }
+
 canvas {
-  display: block;
-  max-width: 1600px !important;
-  width: 100% !important;
-  height: 100% !important;
+    display: block;
+    max-width: 1600px !important;
+    width: 100% !important;
+    height: 100% !important;
 }
